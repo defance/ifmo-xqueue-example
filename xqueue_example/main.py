@@ -1,10 +1,12 @@
 # -*- coding=utf-8 -*-
 
-from xqueue_example import settings, utils, api, api_utils, core
+from xqueue_example import settings, utils, core
 
 import logging
 import time
 import urllib2
+
+import xqueue_api
 
 log = logging.getLogger(__name__)
 
@@ -15,13 +17,14 @@ def main():
     while True:
 
         # Получаем авторизованную сессию
-        session = api_utils.xqueue_login()
+        xsession = xqueue_api.XQueueSession(base_url=settings.XQUEUE_INTERFACE['url'],
+                                            username=settings.XQUEUE_INTERFACE['login'],
+                                            password=settings.XQUEUE_INTERFACE['password'],
+                                            queue=settings.XQUEUE_INTERFACE['queue'],
+                                            autoconnect=True)
 
         # Получаем количество элементов в очереди на данный момент
-        (queue_len_result, queue_len) = api.get_queue_length(
-            session,
-            settings.XQUEUE_INTERFACE['queue']
-        )
+        (queue_len_result, queue_len) = xsession.get_len()
 
         # И все их обрабатываем по очереди, пока можем
         while queue_len_result and queue_len:
@@ -29,10 +32,7 @@ def main():
             log.info("Getting submission")
 
             # Получаем очередное решение из очереди
-            (submission_result, submission) = api.get_submission(
-                session,
-                settings.XQUEUE_INTERFACE['queue']
-            )
+            (submission_result, submission) = xsession.get_submission()
 
             # Если не удалось получить решение на проверку, заканчиваем
             if not submission_result:
@@ -62,14 +62,14 @@ def main():
             )
             response = utils.serialize_xobject(response)
 
-            (put_result, put_message) = api.put_result(session, response)
+            (put_result, put_message) = xsession.put_result(response)
 
             log.info("Submission graded")
 
             queue_len -= 1
 
         # Закрываем сессию
-        session.close()
+        xsession.logout()
 
         # Отдыхаем
         log.info("Empty queue, will now sleep, re-poll in 5s...")

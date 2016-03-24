@@ -8,6 +8,20 @@ XQUEUE_INTERFACE = {
     'queue': '',
 }
 
+XQUEUE_INTERFACE = {
+    'url': 'http://edx-stage-xqueue.academicmt.ru/xqueue',
+    'login': 'programming',
+    'password': 'qZY487TJ2aU2uCU',
+    'queue': 'programming-test',
+}
+
+XQUEUE_INTERFACE = {
+    'url': 'http://192.168.33.10:18040/xqueue',
+    'login': 'lms',
+    'password': 'password',
+    'queue': 'test-pull:8040',
+}
+
 # Относительные адреса api
 XQUEUE_URLS = {
     'login': '/login/',
